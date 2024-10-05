@@ -7,34 +7,61 @@ import { create, verify } from "jsr:@zaubrik/djwt";
 import "jsr:@std/dotenv/load";
 
 const TOKEN = decodeBase64(Deno.env.get("API_KEY") ?? "");
+const SALT_TOKEN = decodeBase64(Deno.env.get("SALT_SECRET") ?? "");
+
 const ALGO = {
 	name: "AES-GCM",
-	// also our nonce ?
+	// also our nonce. it can only be used ONCE. So if server dies
+	// then database dies.
+	// FIXED: WORKAROUND IS TO USE `importKey`
 	iv: TOKEN,
 };
 
-const cryptoKey = await crypto.subtle.generateKey(
+const SALT_ALGO = {
+	name: "AES-GCM",
+	// also our nonce. it can only be used ONCE. So if server dies
+	// then database dies.
+	// FIXED: WORKAROUND IS TO USE `importKey`
+	iv: SALT_TOKEN,
+};
+
+const cryptoKey = await crypto.subtle.importKey(
+	"raw",
+	TOKEN,
 	{
 		name: "AES-GCM",
-		length: 256,
 	},
 	true,
 	["encrypt", "decrypt"],
 );
 
-const db = new Database(new URL("./database/users.db", import.meta.url), {
-	create: true,
-});
+const saltCryptoKey = await crypto.subtle.importKey(
+	"raw",
+	SALT_TOKEN,
+	{
+		name: "AES-GCM",
+	},
+	true,
+	["encrypt", "decrypt"],
+);
+
+const db = new Database("./database/users.db");
 
 const create_table_command = `
 	CREATE TABLE IF NOT EXISTS users(
 		id INTEGER PRIMARY KEY,
-		username TEXT,
-		passphrase TEXT
+		username TEXT NOT NULL,
+		passphrase TEXT NOT NULL,
+		salt TEXT NOT NULL
 	)
 `;
 
-db.exec(create_table_command);
+if (db.open) {
+	db.exec(create_table_command);
+} else {
+	console.error("DB is not connected");
+	Deno.exit(1);
+}
 
 const router = new Router();
 
@@ -64,16 +91,26 @@ router.post("/register", async (ctx) => {
 	const row = stmt.get<User>();
 
 	if (row === undefined) {
+		const randSalt = crypto.getRandomValues(new Uint8Array(16));
 		const enc = new TextEncoder();
-		const passphrasePayload = enc.encode(passphrase);
+		const salt = encodeBase64(randSalt);
+		const saltPayload = enc.encode(salt);
+		const passphrasePayload = enc.encode(passphrase.concat(salt));
 		const encryptPassphrase = await crypto.subtle.encrypt(
 			ALGO,
 			cryptoKey,
 			passphrasePayload,
 		);
+		const encryptSalt = await crypto.subtle.encrypt(
+			SALT_ALGO,
+			saltCryptoKey,
+			saltPayload,
+		);
+
 		const encryptedPassphrase = encodeBase64(encryptPassphrase);
+		const encryptedSalt = encodeBase64(encryptSalt);
 		const changes = db.exec(
-			`INSERT INTO users(username, passphrase) VALUES ('${username}', '${encryptedPassphrase}')`,
+			`INSERT INTO users(username, passphrase, salt) VALUES ('${username}', '${encryptedPassphrase}', '${encryptedSalt}')`,
 		);
 		console.log(changes);
 		console.log(`
@@ -120,7 +157,7 @@ router.post("/login", async (ctx) => {
 		return;
 	}
 	const stmt = db.prepare(`
-		SELECT username, passphrase FROM users WHERE username = '${username}';
+		SELECT username, passphrase, salt FROM users WHERE username = '${username}';
 	`);
 	const user = stmt.get<User>();
 	if (!user) {
@@ -135,15 +172,24 @@ router.post("/login", async (ctx) => {
 
 	const dec = new TextDecoder();
 	const decodedEncryptedPassphrase = decodeBase64(user.passphrase);
+	const decodedEncryptedSalt = decodeBase64(user.salt);
 	const decryptPassphrase = await crypto.subtle.decrypt(
 		ALGO,
 		cryptoKey,
 		decodedEncryptedPassphrase,
 	);
 
-	const decryptPassphraseString = dec.decode(decryptPassphrase);
+	const decryptSalt = await crypto.subtle.decrypt(
+		SALT_ALGO,
+		saltCryptoKey,
+		decodedEncryptedSalt,
+	);
 
-	if (decryptPassphraseString === passphrase) {
+	const decryptPassphraseString = dec.decode(decryptPassphrase);
+	const salt = dec.decode(decryptSalt);
+	const saltedPassphrase = passphrase.concat(salt);
+
+	if (decryptPassphraseString === saltedPassphrase) {
 		const jwtSecret = decodeBase64(Deno.env.get("JWT_SECRET") ?? "");
 
 		const key = await crypto.subtle.importKey(
@@ -245,6 +291,8 @@ router.get("/vip", async (ctx) => {
 const app = new Application();
 
 app.use(router.routes());
-app.use(router.allowedMethods());
+app.use(router.allowedMethods({
+	throw: false,
+}));
 
 app.listen("127.0.0.1:5555");
