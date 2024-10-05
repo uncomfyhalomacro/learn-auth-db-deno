@@ -1,0 +1,14 @@
+{
+  "imports": {
+    "@db/sqlite": "jsr:@db/sqlite@^0.12.0",
+    "@oak/oak": "jsr:@oak/oak@^17.0.0",
+    "@std/crypto": "jsr:@std/crypto@^1.0.3",
+    "@std/dotenv": "jsr:@std/dotenv@^0.225.2",
+    "@std/encoding": "jsr:@std/encoding@^1.0.5",
+    "@zaubrik/djwt": "jsr:@zaubrik/djwt@^3.0.2"
+  },
+  "tasks": {
+    "generateToken": "deno run ./generateToken.ts",
+    "serve": "deno run -A ./main.ts"
+  }
+}
