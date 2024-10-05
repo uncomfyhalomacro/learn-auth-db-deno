@@ -2,3 +2,4 @@
 !.env.example
 .vscode
 *.db
+*.cookie
