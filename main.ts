@@ -1,8 +1,8 @@
 import { Application, Router } from "jsr:@oak/oak";
 import "jsr:@std/dotenv/load";
-import register from "handler/register";
-import login from "handler/login";
-import vip from "handler/vip";
+import register from "middlewares/register";
+import login from "middlewares/login";
+import vip from "middlewares/vip";
 
 const router = new Router();
 

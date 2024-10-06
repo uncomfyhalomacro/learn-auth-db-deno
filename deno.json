@@ -9,9 +9,9 @@
 	"database": "./database/mod.ts",
 	"authentication/crypto": "./authentication/crypto.ts",
 	"authentication/jwt": "./authentication/jwt.ts",
-	"handler/register": "./handler/register.ts",
-	"handler/login": "./handler/login.ts",
-	"handler/vip": "./handler/vip.ts",
+	"middlewares/register": "./middlewares/register.ts",
+	"middlewares/login": "./middlewares/login.ts",
+	"middlewares/vip": "./middlewares/vip.ts",
 	"types/user": "./types/user.ts"
   },
   "tasks": {
