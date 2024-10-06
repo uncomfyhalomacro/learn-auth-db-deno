@@ -16,7 +16,7 @@ const app = new Application();
 
 app.use(router.routes());
 app.use(router.allowedMethods({
-	throw: false,
+  throw: false,
 }));
 
 app.listen("127.0.0.1:5555");
