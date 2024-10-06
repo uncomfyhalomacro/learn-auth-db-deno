@@ -1,23 +1,42 @@
 {
-  "imports": {
-    "@db/sqlite": "jsr:@db/sqlite@^0.12.0",
-    "@oak/oak": "jsr:@oak/oak@^17.0.0",
-    "@std/crypto": "jsr:@std/crypto@^1.0.3",
-    "@std/dotenv": "jsr:@std/dotenv@^0.225.2",
-    "@std/encoding": "jsr:@std/encoding@^1.0.5",
-    "@zaubrik/djwt": "jsr:@zaubrik/djwt@^3.0.2",
-	"database": "./database/mod.ts",
-	"authentication/crypto": "./authentication/crypto.ts",
-	"authentication/jwt": "./authentication/jwt.ts",
-	"authentication/checkAuth": "./authentication/mod.ts",
-	"middlewares/register": "./middlewares/register.ts",
-	"middlewares/login": "./middlewares/login.ts",
-	"middlewares/vip": "./middlewares/vip.ts",
-	"middlewares/auth/updateAccount": "./middlewares/auth/updateAccount.ts",
-	"types/user": "./types/user.ts"
-  },
-  "tasks": {
-    "generateToken": "deno run ./generateToken.ts",
-    "serve": "deno run --allow-read --allow-ffi --allow-net --allow-env --deny-sys ./main.ts"
-  }
+	"imports": {
+		"@db/sqlite": "jsr:@db/sqlite@^0.12.0",
+		"@oak/oak": "jsr:@oak/oak@^17.0.0",
+		"@std/crypto": "jsr:@std/crypto@^1.0.3",
+		"@std/dotenv": "jsr:@std/dotenv@^0.225.2",
+		"@std/encoding": "jsr:@std/encoding@^1.0.5",
+		"@zaubrik/djwt": "jsr:@zaubrik/djwt@^3.0.2",
+		"database": "./database/mod.ts",
+		"authentication/crypto": "./authentication/crypto.ts",
+		"authentication/jwt": "./authentication/jwt.ts",
+		"authentication/checkAuth": "./authentication/mod.ts",
+		"middlewares/register": "./middlewares/register.ts",
+		"middlewares/login": "./middlewares/login.ts",
+		"middlewares/vip": "./middlewares/vip.ts",
+		"middlewares/auth/updateAccount": "./middlewares/auth/updateAccount.ts",
+		"types/user": "./types/user.ts"
+	},
+	"tasks": {
+		"generateToken": "deno run ./generateToken.ts",
+		"serve": "deno run --allow-read --allow-ffi --allow-net --allow-env --deny-sys ./main.ts"
+	},
+	"license": "UNLICENSE",
+	"lint": {
+		"rules": {
+			"include": [
+				"verbatim-module-syntax",
+				"prefer-as-const",
+				"prefer-ascii",
+				"prefer-const"
+			]
+		}
+	},
+	"fmt": {
+		"indentWidth": 2,
+		"useTabs": true,
+		"exclude": [
+			"*.db",
+			"*.lock"
+		]
+	}
 }

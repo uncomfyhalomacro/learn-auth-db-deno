@@ -20,7 +20,7 @@ router.post("/login", login);
 router.get("/vip", vip);
 
 authRouter.get("/auth/hello", (ctx) => {
-  ctx.response.body = "Hello world";
+	ctx.response.body = "Hello world";
 });
 
 authRouter.put("/auth/update", updateAccount);
@@ -33,7 +33,7 @@ app.use(router.routes());
 // Auth Routes
 app.use(checkAuth, authRouter.routes());
 app.use(router.allowedMethods({
-  throw: false,
+	throw: false,
 }));
 
 app.listen("127.0.0.1:5555");

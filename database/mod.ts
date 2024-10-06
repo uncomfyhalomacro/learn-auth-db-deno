@@ -11,10 +11,10 @@ const create_table_command = `
 `;
 
 if (db.open) {
-  db.exec(create_table_command);
+	db.exec(create_table_command);
 } else {
-  console.error("DB is not connected");
-  Deno.exit(1);
+	console.error("DB is not connected");
+	Deno.exit(1);
 }
 
 export default db;
