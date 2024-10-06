@@ -8,7 +8,7 @@ You must first generate a token by running the following command
 deno task generateToken
 ```
 
-Copy the values between the pair of backtick characters e.g. `\`VALUE\`` -> `VALUE`.
+Copy the values between the pair of backtick characters e.g. `` `VALUE` `` -> `VALUE`.
 
 Then paste those values to a `.env` file. See `.env.example` file for where you should paste it as it will be obvious.
 
