@@ -1,5 +1,5 @@
-import { Application, Router } from "jsr:@oak/oak";
-import "jsr:@std/dotenv/load";
+import { Application, Router } from "@oak/oak";
+import "@std/dotenv/load";
 import register from "middlewares/register";
 import login from "middlewares/login";
 import vip from "middlewares/vip";

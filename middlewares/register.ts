@@ -1,5 +1,5 @@
-import type { RouterContext } from "jsr:@oak/oak/router";
-import { encodeBase64 } from "jsr:@std/encoding";
+import type { RouterContext } from "@oak/oak/router";
+import { encodeBase64 } from "@std/encoding";
 import type User from "types/user";
 import {
 	ALGO,

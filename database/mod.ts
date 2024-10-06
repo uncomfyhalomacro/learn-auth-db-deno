@@ -1,4 +1,4 @@
-import { Database } from "jsr:@db/sqlite";
+import { Database } from "@db/sqlite";
 const db = new Database("./database/users.db");
 
 const create_table_command = `

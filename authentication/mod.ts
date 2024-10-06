@@ -1,14 +1,14 @@
 import { verifyJwt } from "authentication/jwt";
-import type { Context, Next } from "jsr:@oak/oak";
+import type { Context, Next } from "@oak/oak";
 
 const checkAuth = async (
 	ctx: Context,
 	next: Next,
 ) => {
-	if (
-		!decodeURIComponent(ctx.request.url.pathname).endsWith("/hello") ||
-		!decodeURIComponent(ctx.request.url.pathname).endsWith("/update")
-	) return await next();
+	const allowedRoutes = ["/auth/hello", "/auth/update"];
+	const pathname = decodeURIComponent(ctx.request.url.pathname);
+
+	if (!allowedRoutes.includes(pathname)) return;
 
 	const jwtFromCookie = await ctx.cookies.get("user");
 	const authHeader = ctx.request.headers.get("Authorization");

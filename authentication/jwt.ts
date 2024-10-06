@@ -1,5 +1,5 @@
-import { decodeBase64 } from "jsr:@std/encoding";
-import { create, verify } from "jsr:@zaubrik/djwt";
+import { decodeBase64 } from "@std/encoding";
+import { create, verify } from "@zaubrik/djwt";
 import type User from "types/user";
 
 const jwtSecret = decodeBase64(Deno.env.get("JWT_SECRET") ?? "");

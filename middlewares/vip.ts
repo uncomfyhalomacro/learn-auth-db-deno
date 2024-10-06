@@ -1,4 +1,4 @@
-import type { RouterContext } from "jsr:@oak/oak/router";
+import type { RouterContext } from "@oak/oak/router";
 import { verifyJwt } from "authentication/jwt";
 
 const vip = async (

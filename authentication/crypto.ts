@@ -1,5 +1,5 @@
-import { crypto } from "jsr:@std/crypto";
-import { decodeBase64 } from "jsr:@std/encoding";
+import { crypto } from "@std/crypto";
+import { decodeBase64 } from "@std/encoding";
 
 const TOKEN = decodeBase64(Deno.env.get("API_KEY") ?? "");
 const SALT_TOKEN = decodeBase64(Deno.env.get("SALT_SECRET") ?? "");
