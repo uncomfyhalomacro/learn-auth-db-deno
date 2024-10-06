@@ -5,7 +5,14 @@
     "@std/crypto": "jsr:@std/crypto@^1.0.3",
     "@std/dotenv": "jsr:@std/dotenv@^0.225.2",
     "@std/encoding": "jsr:@std/encoding@^1.0.5",
-    "@zaubrik/djwt": "jsr:@zaubrik/djwt@^3.0.2"
+    "@zaubrik/djwt": "jsr:@zaubrik/djwt@^3.0.2",
+	"database": "./database/mod.ts",
+	"authentication/crypto": "./authentication/crypto.ts",
+	"authentication/jwt": "./authentication/jwt.ts",
+	"handler/register": "./handler/register.ts",
+	"handler/login": "./handler/login.ts",
+	"handler/vip": "./handler/vip.ts",
+	"types/user": "./types/user.ts"
   },
   "tasks": {
     "generateToken": "deno run ./generateToken.ts",
