@@ -16,6 +16,6 @@
   },
   "tasks": {
     "generateToken": "deno run ./generateToken.ts",
-    "serve": "deno run -A ./main.ts"
+    "serve": "deno run --allow-read --allow-ffi --allow-net --allow-env --deny-sys ./main.ts"
   }
 }
