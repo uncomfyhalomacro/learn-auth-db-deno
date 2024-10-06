@@ -9,9 +9,11 @@
 	"database": "./database/mod.ts",
 	"authentication/crypto": "./authentication/crypto.ts",
 	"authentication/jwt": "./authentication/jwt.ts",
+	"authentication/checkAuth": "./authentication/mod.ts",
 	"middlewares/register": "./middlewares/register.ts",
 	"middlewares/login": "./middlewares/login.ts",
 	"middlewares/vip": "./middlewares/vip.ts",
+	"middlewares/auth/updateAccount": "./middlewares/auth/updateAccount.ts",
 	"types/user": "./types/user.ts"
   },
   "tasks": {
