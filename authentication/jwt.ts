@@ -2,6 +2,9 @@ import { decodeBase64 } from "@std/encoding";
 import { create, verify } from "@zaubrik/djwt";
 import type User from "types/user";
 
+// This will return a value of `UintArray` which
+// I think Postman does not support since it wants the
+// secret key (decoded form) to be purely string
 const jwtSecret = decodeBase64(Deno.env.get("JWT_SECRET") ?? "");
 const key = await crypto.subtle.importKey(
 	"raw",
