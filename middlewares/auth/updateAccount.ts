@@ -11,7 +11,7 @@ import db from "database";
 
 const updateAccount = async (
 	ctx: RouterContext<
-		"/update",
+		"/auth/update",
 		Record<string | number, string | undefined>,
 		// deno-lint-ignore no-explicit-any
 		Record<string, any>

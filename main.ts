@@ -19,11 +19,11 @@ router.post("/login", login);
 // we have a separate `Router` instance called `authRouter`.
 router.get("/vip", vip);
 
-authRouter.get("/hello", (ctx) => {
+authRouter.get("/auth/hello", (ctx) => {
   ctx.response.body = "Hello world";
 });
 
-authRouter.put("/update", updateAccount);
+authRouter.put("/auth/update", updateAccount);
 
 const app = new Application();
 

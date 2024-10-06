@@ -22,5 +22,7 @@ Here are the API routes you can experiment with `curl`:
 - `http://127.0.0.1:5555/login`
 - `http://127.0.0.1:5555/register`
 - `http://127.0.0.1:5555/vip`
+- `http://127.0.0.1:5555/hello`
+- `http://127.0.0.1:5555/update`
 
 Remember, `127.0.0.1` does not necessarily mean it's aliased to `localhost`.
