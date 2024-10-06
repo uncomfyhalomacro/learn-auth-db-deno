@@ -5,6 +5,11 @@ const checkAuth = async (
 	ctx: Context,
 	next: Next,
 ) => {
+	if (
+		!decodeURIComponent(ctx.request.url.pathname).endsWith("/hello") ||
+		!decodeURIComponent(ctx.request.url.pathname).endsWith("/update")
+	) return await next();
+
 	const jwtFromCookie = await ctx.cookies.get("user");
 	const authHeader = ctx.request.headers.get("Authorization");
 	console.log(
