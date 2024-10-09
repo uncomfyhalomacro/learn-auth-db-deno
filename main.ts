@@ -1,10 +1,11 @@
-import { Application, Router } from "@oak/oak";
+import { Application, Router, Status } from "@oak/oak";
 import "@std/dotenv/load";
 import register from "middlewares/register";
 import login from "middlewares/login";
 import vip from "middlewares/vip";
 import checkAuth from "authentication/checkAuth";
 import updateAccount from "middlewares/auth/updateAccount";
+import { route } from "@oak/oak/serve";
 
 const router = new Router();
 const authRouter = new Router();
@@ -14,7 +15,10 @@ router.post("/register", register).post("/login", login)
 	// The reason why is because we can check authentication status
 	// to authenticated/authorised needed actions per route, hence, why
 	// we have a separate `Router` instance called `authRouter`.
-	.get("/vip", vip);
+	.get("/vip", vip)
+	.get("/hello", (ctx) => {
+		ctx.response.body = "Hello world";
+	});
 
 authRouter.get("/auth/hello", (ctx) => {
 	ctx.response.body = "Hello world";
@@ -22,16 +26,37 @@ authRouter.get("/auth/hello", (ctx) => {
 
 const app = new Application();
 
+app.use(router.allowedMethods());
+app.use(authRouter.allowedMethods());
+
 // No auth routes
 app.use(router.routes());
 
 // Auth Routes
-app.use(checkAuth, authRouter.routes());
 app.use(
-	router.allowedMethods({
-		throw: false,
-	}),
-	authRouter.allowedMethods(),
+	async (ctx, next) => {
+		const pathname = decodeURIComponent(ctx.request.url.pathname);
+		if (
+			ctx.request.method === "GET" &&
+			pathname === "/auth/hello"
+		) {
+			return await next();
+		}
+
+		if (
+			ctx.request.method === "PUT" &&
+			pathname === "/auth/update"
+		) {
+			return await next();
+		}
+		ctx.response.status = 404;
+		ctx.response.body = {
+			message: "Bad Request",
+			status: 404,
+		};
+	},
+	checkAuth,
+	authRouter.routes(),
 );
 
 app.listen(

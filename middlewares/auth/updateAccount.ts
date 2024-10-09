@@ -8,6 +8,7 @@ import {
 	saltCryptoKey,
 } from "authentication/crypto";
 import db from "database";
+import checkAuth from "authentication/checkAuth";
 
 const updateAccount = async (
 	ctx: RouterContext<
@@ -17,12 +18,23 @@ const updateAccount = async (
 		Record<string, any>
 	>,
 ) => {
+	const hasBody = ctx.request.body.stream;
+	if (hasBody) {
+		ctx.response.status = 404;
+		ctx.response.body = {
+			message: "Bad Request",
+			status: 404,
+		};
+		return;
+	}
+
 	const { username: oldUsername, newUsername, passphrase }: {
-		username: string;
-		newUsername: string;
-		passphrase: string;
+		username?: string;
+		newUsername?: string;
+		passphrase?: string;
 	} = await ctx.request.body.json();
-	if (!newUsername && !passphrase) {
+
+	if (!oldUsername || !newUsername || !passphrase) {
 		ctx.response.status = 422;
 		ctx.response.body = {
 			message: "Username or passphrase field cannot be empty",
@@ -59,7 +71,9 @@ const updateAccount = async (
 		const randSalt = crypto.getRandomValues(new Uint8Array(16));
 		const enc = new TextEncoder();
 		const dec = new TextDecoder();
-		const decodedEncryptedPassphrase = decodeBase64(user.passphrase);
+		const decodedEncryptedPassphrase = decodeBase64(
+			user.passphrase,
+		);
 		const decodedEncryptedSalt = decodeBase64(user.salt);
 		const decryptPassphrase = await crypto.subtle.decrypt(
 			ALGO,
@@ -105,7 +119,9 @@ const updateAccount = async (
 
 		const newSalt = encodeBase64(randSalt);
 		const saltPayload = enc.encode(newSalt);
-		const passphrasePayload = enc.encode(passphrase.concat(newSalt));
+		const passphrasePayload = enc.encode(
+			passphrase.concat(newSalt),
+		);
 		const encryptPassphrase = await crypto.subtle.encrypt(
 			ALGO,
 			cryptoKey,

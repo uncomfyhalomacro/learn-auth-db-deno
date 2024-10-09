@@ -5,10 +5,15 @@ const checkAuth = async (
 	ctx: Context,
 	next: Next,
 ) => {
-	const allowedRoutes = ["/auth/hello", "/auth/update"];
 	const pathname = decodeURIComponent(ctx.request.url.pathname);
-
-	if (!allowedRoutes.includes(pathname)) return;
+	if (!pathname.startsWith("/auth")) {
+		ctx.response.status = 404;
+		ctx.response.body = {
+			message: "Bad Request",
+			status: 404,
+		};
+		return;
+	}
 
 	const jwtFromCookie = await ctx.cookies.get("user");
 	const authHeader = ctx.request.headers.get("Authorization");
@@ -44,16 +49,17 @@ const checkAuth = async (
 				message: "Authenticated",
 				status: 200,
 			};
-			return await next();
 		}
+	} else {
+		ctx.response.status = 403;
+		ctx.response.body = JSON.stringify({
+			message: "Not authenticated",
+			status: 403,
+		});
+		return;
 	}
 
-	ctx.response.status = 403;
-	ctx.response.body = JSON.stringify({
-		message: "Not authenticated",
-		status: 403,
-	});
-	return;
+	return await next();
 };
 
 export default checkAuth;
