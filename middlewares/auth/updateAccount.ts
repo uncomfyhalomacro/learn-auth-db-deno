@@ -10,6 +10,12 @@ import {
 import db from "database";
 import checkAuth from "authentication/checkAuth";
 
+interface UpdateRequestBody {
+	username?: string;
+	newUsername?: string;
+	passphrase?: string;
+}
+
 const updateAccount = async (
 	ctx: RouterContext<
 		"/auth/update",
@@ -18,13 +24,19 @@ const updateAccount = async (
 		Record<string, any>
 	>,
 ) => {
-	const hasBody = ctx.request.body.stream;
-	if (hasBody) {
-		ctx.response.status = 404;
+	const requestBody: UpdateRequestBody | null = await ctx.request
+		.body.json().catch((err) => {
+			console.log(err);
+			return null;
+		});
+
+	if (!requestBody) {
+		ctx.response.status = 422;
 		ctx.response.body = {
-			message: "Bad Request",
-			status: 404,
+			message: "Empty input",
+			status: 422,
 		};
+
 		return;
 	}
 
@@ -32,7 +44,7 @@ const updateAccount = async (
 		username?: string;
 		newUsername?: string;
 		passphrase?: string;
-	} = await ctx.request.body.json();
+	} = requestBody;
 
 	if (!oldUsername || !newUsername || !passphrase) {
 		ctx.response.status = 422;

@@ -9,6 +9,11 @@ import {
 } from "authentication/crypto";
 import db from "database";
 
+interface RegisterBody {
+	username?: string;
+	passphrase?: string;
+}
+
 const register = async (
 	ctx: RouterContext<
 		"/register",
@@ -17,12 +22,27 @@ const register = async (
 		Record<string, any>
 	>,
 ) => {
-	const { username, passphrase }: { username: string; passphrase: string } =
-		await ctx.request.body.json();
-	if (!username.trim()) {
+	const requestBody: RegisterBody | null = await ctx.request
+		.body.json().catch((err) => {
+			console.log(err);
+			return null;
+		});
+
+	if (!requestBody) {
 		ctx.response.status = 422;
 		ctx.response.body = {
-			message: "Username field cannot be empty",
+			message: "Empty input",
+			status: 422,
+		};
+
+		return;
+	}
+	const { username, passphrase } = requestBody;
+
+	if (!username?.trim() || !passphrase?.trim()) {
+		ctx.response.status = 422;
+		ctx.response.body = {
+			message: "Username and passphrase field cannot be empty",
 			status: 422,
 		};
 

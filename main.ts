@@ -5,7 +5,6 @@ import login from "middlewares/login";
 import vip from "middlewares/vip";
 import checkAuth from "authentication/checkAuth";
 import updateAccount from "middlewares/auth/updateAccount";
-import { route } from "@oak/oak/serve";
 
 const router = new Router();
 const authRouter = new Router();
