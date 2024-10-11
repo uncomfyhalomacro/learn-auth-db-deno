@@ -1,6 +1,16 @@
 import { verifyJwt } from "authentication/jwt";
 import type { Context, Next } from "@oak/oak";
 
+/**
+Checks if user is authenticated by checking the request cookie
+and the Authorization header. Then the JWT tokens are pulled
+from both cookie and header and then compared if it matches.
+
+If they don't match, then function just early returns with
+null/undefined.
+
+Otherwise, `next` function will be called.
+ */
 const checkAuth = async (
 	ctx: Context,
 	next: Next,
