@@ -20,31 +20,17 @@ router.post("/register", register).post("/login", login)
 		ctx.response.body = "Hello world";
 	}).get("/close", (ctx) => {
 		ctx.response.body = "Bye!";
-		controller.abort();
+		controller.abort("User has invoked to close the connection");
 	});
 
-authRouter.get("/auth/hello", (ctx) => {
-	ctx.response.body = "Hello world";
-}).put("/auth/update", updateAccount).get("/auth/close", (ctx) => {
-	ctx.response.body = "Bye!";
-	controller.abort();
-});
-
-const app = new Application();
-
-app.use(router.allowedMethods());
-app.use(authRouter.allowedMethods());
-
-// No auth routes
-app.use(router.routes());
-
-// Auth Routes
-app.use(
+authRouter.get(
+	"/auth/hello",
 	async (ctx, next) => {
 		const pathname = decodeURIComponent(ctx.request.url.pathname);
 		if (
 			ctx.request.method === "GET" &&
-			(pathname === "/auth/hello" || pathname === "/auth/close")
+			(pathname === "/auth/hello" ||
+				pathname === "/auth/close")
 		) {
 			return await next();
 		}
@@ -62,9 +48,29 @@ app.use(
 		};
 	},
 	checkAuth,
+	(ctx) => {
+		ctx.response.body = "Hello world";
+	},
+).put("/auth/update", updateAccount).get("/auth/close", async (ctx) => {
+	await ctx.request.body.stream?.cancel("Closing");
+	ctx.response.body = "Bye!";
+	controller.abort("User has invoked to close the connection");
+});
+
+const app = new Application();
+
+app.use(router.allowedMethods());
+app.use(authRouter.allowedMethods());
+
+// No auth routes
+app.use(router.routes());
+
+// Auth Routes
+app.use(
 	authRouter.routes(),
 );
 
+const { signal } = controller;
 app.listen(
 	Deno.env.get("USE_TLS")
 		? {
@@ -77,12 +83,12 @@ app.listen(
 			key: Deno.readTextFileSync(
 				"./tls/localhost.key",
 			),
-			signal: controller.signal,
+			signal,
 		}
 		: {
 			hostname: "127.0.0.1",
 			secure: false,
 			port: 5555,
-			signal: controller.signal,
+			signal,
 		},
 );
