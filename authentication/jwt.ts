@@ -1,5 +1,5 @@
 import { decodeBase64 } from "@std/encoding";
-import { create, verify } from "@zaubrik/djwt";
+import { create, getNumericDate, verify } from "@zaubrik/djwt";
 import type User from "types/user";
 
 // This will return a value of `UintArray` which
@@ -14,13 +14,17 @@ const key = await crypto.subtle.importKey(
 	["sign", "verify"],
 );
 
-const generateJwt = async (payload: User | undefined) => {
+const generateJwt = async (payload: User | undefined, origin: string) => {
 	if (!payload) return payload;
+
+	const nbf = getNumericDate(60 * 60);
 
 	const jwt = await create({
 		alg: "HS512",
 		type: "JWT",
 	}, {
+		exp: nbf,
+		aud: origin,
 		user: payload.username,
 	}, key);
 

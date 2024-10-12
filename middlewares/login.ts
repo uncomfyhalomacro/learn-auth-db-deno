@@ -18,8 +18,10 @@ const login = async (
 		Record<string, any>
 	>,
 ) => {
-	const { username, passphrase }: { username: string; passphrase: string } =
-		await ctx.request.body.json();
+	const { username, passphrase }: {
+		username: string;
+		passphrase: string;
+	} = await ctx.request.body.json();
 	if (!username.trim()) {
 		ctx.response.status = 422;
 		ctx.response.body = {
@@ -73,7 +75,7 @@ const login = async (
 	const saltedPassphrase = passphrase.concat(salt);
 
 	if (decryptPassphraseString === saltedPassphrase) {
-		const jwt = await generateJwt(user);
+		const jwt = await generateJwt(user, ctx.request.url.origin);
 
 		if (!jwt) {
 			ctx.response.status = 403;

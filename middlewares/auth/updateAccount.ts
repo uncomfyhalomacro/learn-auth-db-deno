@@ -8,7 +8,6 @@ import {
 	saltCryptoKey,
 } from "authentication/crypto";
 import db from "database";
-import checkAuth from "authentication/checkAuth";
 
 interface UpdateRequestBody {
 	username?: string;
