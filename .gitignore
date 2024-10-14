@@ -3,3 +3,7 @@
 .vscode
 *.db
 *.cookie
+
+auth-db-sample
+learn-auth-db-deno
+.vscode.bak
