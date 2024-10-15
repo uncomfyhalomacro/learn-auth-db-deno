@@ -3,7 +3,7 @@ const db = new Database("./database/users.db");
 
 const create_table_command = `
 	CREATE TABLE IF NOT EXISTS users(
-		id INTEGER PRIMARY KEY,
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
 		username TEXT NOT NULL,
 		passphrase TEXT NOT NULL,
 		salt TEXT NOT NULL
