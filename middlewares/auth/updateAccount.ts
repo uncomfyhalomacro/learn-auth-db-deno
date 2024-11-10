@@ -1,13 +1,8 @@
 import type { RouterContext } from "@oak/oak/router";
-import { decodeBase64, encodeBase64 } from "@std/encoding";
+import {  encodeBase64 } from "@std/encoding";
 import type User from "types/user";
-import {
-	ALGO,
-	cryptoKey,
-	SALT_ALGO,
-	saltCryptoKey,
-} from "authentication/crypto";
 import db from "database";
+import { argon2Hasher, argon2Verify } from "authentication/crypto";
 
 interface UpdateRequestBody {
 	username?: string;
@@ -45,7 +40,7 @@ const updateAccount = async (
 		passphrase?: string;
 	} = requestBody;
 
-	if (!oldUsername || !newUsername || !passphrase) {
+	if (!oldUsername || !newUsername) {
 		ctx.response.status = 422;
 		ctx.response.body = {
 			message: "Username or passphrase field cannot be empty",
@@ -87,29 +82,7 @@ const updateAccount = async (
 	
 	let usernameChangeMessage = "";
 	let passphraseChangeMessage = "";
-	const randSalt = crypto.getRandomValues(new Uint8Array(16));
-	const enc = new TextEncoder();
-	const dec = new TextDecoder();
-	const decodedEncryptedPassphrase = decodeBase64(
-		user.passphrase,
-	);
-	const decodedEncryptedSalt = decodeBase64(user.salt);
-	const decryptPassphrase = await crypto.subtle.decrypt(
-		ALGO,
-		cryptoKey,
-		decodedEncryptedPassphrase,
-	);
-
-	const decryptSalt = await crypto.subtle.decrypt(
-		SALT_ALGO,
-		saltCryptoKey,
-		decodedEncryptedSalt,
-	);
-
-	const decryptPassphraseString = dec.decode(decryptPassphrase);
-	const salt = dec.decode(decryptSalt);
-	const saltedPassphrase = passphrase.concat(salt);
-
+	const newPassphraseWithOldSalt = argon2Verify(passphrase ?? "", user.salt, user.passphrase);
 	if (newUsername === oldUsername) {
 		usernameChangeMessage += "Username unchanged";
 	} else {
@@ -117,7 +90,7 @@ const updateAccount = async (
 			`Username changed from \`${oldUsername}\` to \`${newUsername}\``;
 	}
 
-	if (decryptPassphraseString === saltedPassphrase) {
+	if (!passphrase?.trim() || newPassphraseWithOldSalt) {
 		passphraseChangeMessage += "Passphrase unchanged";
 	} else {
 		passphraseChangeMessage += "Passphrase changed";
@@ -125,7 +98,7 @@ const updateAccount = async (
 
 	if (
 		(newUsername === oldUsername) &&
-		(decryptPassphraseString === saltedPassphrase)
+		(newPassphraseWithOldSalt)
 	) {
 		ctx.response.status = 304;
 		ctx.response.body = {
@@ -136,30 +109,15 @@ const updateAccount = async (
 		return;
 	}
 
+	const randSalt = crypto.getRandomValues(new Uint8Array(32));
 	const newSalt = encodeBase64(randSalt);
-	const saltPayload = enc.encode(newSalt);
-	const passphrasePayload = enc.encode(
-		passphrase.concat(newSalt),
-	);
-	const encryptPassphrase = await crypto.subtle.encrypt(
-		ALGO,
-		cryptoKey,
-		passphrasePayload,
-	);
-	const encryptSalt = await crypto.subtle.encrypt(
-		SALT_ALGO,
-		saltCryptoKey,
-		saltPayload,
-	);
-
-	const encryptedPassphrase = encodeBase64(encryptPassphrase);
-	const encryptedSalt = encodeBase64(encryptSalt);
+	const hashedPassphrase = encodeBase64(argon2Hasher(passphrase ?? "", newSalt));
 	const changes = db.exec(
 		`
 			UPDATE users 
 			SET username = '${newUsername}', 
-				passphrase = '${encryptedPassphrase}',
-				salt = '${encryptedSalt}'
+				passphrase = '${hashedPassphrase}',
+				salt = '${newSalt}'
 			WHERE
 				username = '${oldUsername}'
 			`,
