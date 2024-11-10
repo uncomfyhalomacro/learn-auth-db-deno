@@ -1,14 +1,8 @@
 import type { RouterContext } from "@oak/oak/router";
 import { encodeBase64 } from "@std/encoding";
 import type User from "types/user";
-import {
-	ALGO,
-	cryptoKey,
-	SALT_ALGO,
-	saltCryptoKey,
-} from "authentication/crypto";
 import db from "database";
-
+import { argon2Hasher } from "authentication/crypto";
 interface RegisterBody {
 	username?: string;
 	passphrase?: string;
@@ -37,6 +31,7 @@ const register = async (
 
 		return;
 	}
+	
 	const { username, passphrase } = requestBody;
 
 	if (!username?.trim() || !passphrase?.trim()) {
@@ -56,26 +51,11 @@ const register = async (
 	const row = stmt.get<User>();
 
 	if (row === undefined) {
-		const randSalt = crypto.getRandomValues(new Uint8Array(16));
-		const enc = new TextEncoder();
+		const randSalt = crypto.getRandomValues(new Uint8Array(32));
 		const salt = encodeBase64(randSalt);
-		const saltPayload = enc.encode(salt);
-		const passphrasePayload = enc.encode(passphrase.concat(salt));
-		const encryptPassphrase = await crypto.subtle.encrypt(
-			ALGO,
-			cryptoKey,
-			passphrasePayload,
-		);
-		const encryptSalt = await crypto.subtle.encrypt(
-			SALT_ALGO,
-			saltCryptoKey,
-			saltPayload,
-		);
-
-		const encryptedPassphrase = encodeBase64(encryptPassphrase);
-		const encryptedSalt = encodeBase64(encryptSalt);
+		const hashedPassphrase = encodeBase64(argon2Hasher(passphrase, salt));
 		const changes = db.exec(
-			`INSERT INTO users(username, passphrase, salt) VALUES ('${username}', '${encryptedPassphrase}', '${encryptedSalt}')`,
+			`INSERT INTO users(username, passphrase, salt) VALUES ('${username}', '${hashedPassphrase}', '${salt}')`,
 		);
 		console.log(changes);
 		console.log(`

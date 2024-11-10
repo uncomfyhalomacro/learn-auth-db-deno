@@ -1,11 +1,5 @@
 import type { RouterContext } from "@oak/oak/router";
-import { decodeBase64 } from "@std/encoding/base64";
-import {
-	ALGO,
-	cryptoKey,
-	SALT_ALGO,
-	saltCryptoKey,
-} from "authentication/crypto";
+import { argon2Verify } from "authentication/crypto";
 import { generateJwt } from "authentication/jwt";
 import db from "database";
 import type User from "types/user";
@@ -55,26 +49,9 @@ const login = async (
 		return;
 	}
 
-	const dec = new TextDecoder();
-	const decodedEncryptedPassphrase = decodeBase64(user.passphrase);
-	const decodedEncryptedSalt = decodeBase64(user.salt);
-	const decryptPassphrase = await crypto.subtle.decrypt(
-		ALGO,
-		cryptoKey,
-		decodedEncryptedPassphrase,
-	);
+	const verifiedPassphraseString = argon2Verify(passphrase, user.salt, user.passphrase);
 
-	const decryptSalt = await crypto.subtle.decrypt(
-		SALT_ALGO,
-		saltCryptoKey,
-		decodedEncryptedSalt,
-	);
-
-	const decryptPassphraseString = dec.decode(decryptPassphrase);
-	const salt = dec.decode(decryptSalt);
-	const saltedPassphrase = passphrase.concat(salt);
-
-	if (decryptPassphraseString === saltedPassphrase) {
+	if (verifiedPassphraseString) {
 		const jwt = await generateJwt(user, ctx.request.url.origin);
 
 		if (!jwt) {

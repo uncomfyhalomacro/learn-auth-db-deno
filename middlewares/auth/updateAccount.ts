@@ -76,78 +76,86 @@ const updateAccount = async (
 		return;
 	}
 
-	if (!userExists) {
-		let usernameChangeMessage = "";
-		let passphraseChangeMessage = "";
-		const randSalt = crypto.getRandomValues(new Uint8Array(16));
-		const enc = new TextEncoder();
-		const dec = new TextDecoder();
-		const decodedEncryptedPassphrase = decodeBase64(
-			user.passphrase,
-		);
-		const decodedEncryptedSalt = decodeBase64(user.salt);
-		const decryptPassphrase = await crypto.subtle.decrypt(
-			ALGO,
-			cryptoKey,
-			decodedEncryptedPassphrase,
-		);
+	if (userExists) {
+		ctx.response.status = 409;
+		ctx.response.body = {
+			message: `Username \`${newUsername}\` already taken`,
+			status: 409,
+		};
+		return;
+	}
+	
+	let usernameChangeMessage = "";
+	let passphraseChangeMessage = "";
+	const randSalt = crypto.getRandomValues(new Uint8Array(16));
+	const enc = new TextEncoder();
+	const dec = new TextDecoder();
+	const decodedEncryptedPassphrase = decodeBase64(
+		user.passphrase,
+	);
+	const decodedEncryptedSalt = decodeBase64(user.salt);
+	const decryptPassphrase = await crypto.subtle.decrypt(
+		ALGO,
+		cryptoKey,
+		decodedEncryptedPassphrase,
+	);
 
-		const decryptSalt = await crypto.subtle.decrypt(
-			SALT_ALGO,
-			saltCryptoKey,
-			decodedEncryptedSalt,
-		);
+	const decryptSalt = await crypto.subtle.decrypt(
+		SALT_ALGO,
+		saltCryptoKey,
+		decodedEncryptedSalt,
+	);
 
-		const decryptPassphraseString = dec.decode(decryptPassphrase);
-		const salt = dec.decode(decryptSalt);
-		const saltedPassphrase = passphrase.concat(salt);
+	const decryptPassphraseString = dec.decode(decryptPassphrase);
+	const salt = dec.decode(decryptSalt);
+	const saltedPassphrase = passphrase.concat(salt);
 
-		if (newUsername === oldUsername) {
-			usernameChangeMessage += "Username unchanged";
-		} else {
-			usernameChangeMessage +=
-				`Username changed from \`${oldUsername}\` to \`${newUsername}\``;
-		}
+	if (newUsername === oldUsername) {
+		usernameChangeMessage += "Username unchanged";
+	} else {
+		usernameChangeMessage +=
+			`Username changed from \`${oldUsername}\` to \`${newUsername}\``;
+	}
 
-		if (decryptPassphraseString === saltedPassphrase) {
-			passphraseChangeMessage += "Passphrase unchanged";
-		} else {
-			passphraseChangeMessage += "Passphrase changed";
-		}
+	if (decryptPassphraseString === saltedPassphrase) {
+		passphraseChangeMessage += "Passphrase unchanged";
+	} else {
+		passphraseChangeMessage += "Passphrase changed";
+	}
 
-		if (
-			(newUsername === oldUsername) &&
-			(decryptPassphraseString === saltedPassphrase)
-		) {
-			ctx.response.status = 304;
-			ctx.response.body = {
-				message:
-					`No changes were being sent. ${usernameChangeMessage}. ${passphraseChangeMessage}`,
-				status: 304,
-			};
-			return;
-		}
+	if (
+		(newUsername === oldUsername) &&
+		(decryptPassphraseString === saltedPassphrase)
+	) {
+		ctx.response.status = 304;
+		ctx.response.body = {
+			message:
+				`No changes were being sent. ${usernameChangeMessage}. ${passphraseChangeMessage}`,
+			status: 304,
+		};
+		return;
+	}
 
-		const newSalt = encodeBase64(randSalt);
-		const saltPayload = enc.encode(newSalt);
-		const passphrasePayload = enc.encode(
-			passphrase.concat(newSalt),
-		);
-		const encryptPassphrase = await crypto.subtle.encrypt(
-			ALGO,
-			cryptoKey,
-			passphrasePayload,
-		);
-		const encryptSalt = await crypto.subtle.encrypt(
-			SALT_ALGO,
-			saltCryptoKey,
-			saltPayload,
-		);
+	const newSalt = encodeBase64(randSalt);
+	const saltPayload = enc.encode(newSalt);
+	const passphrasePayload = enc.encode(
+		passphrase.concat(newSalt),
+	);
+	const encryptPassphrase = await crypto.subtle.encrypt(
+		ALGO,
+		cryptoKey,
+		passphrasePayload,
+	);
+	const encryptSalt = await crypto.subtle.encrypt(
+		SALT_ALGO,
+		saltCryptoKey,
+		saltPayload,
+	);
 
-		const encryptedPassphrase = encodeBase64(encryptPassphrase);
-		const encryptedSalt = encodeBase64(encryptSalt);
-		const changes = db.exec(
-			`
+	const encryptedPassphrase = encodeBase64(encryptPassphrase);
+	const encryptedSalt = encodeBase64(encryptSalt);
+	const changes = db.exec(
+		`
 			UPDATE users 
 			SET username = '${newUsername}', 
 				passphrase = '${encryptedPassphrase}',
@@ -155,24 +163,15 @@ const updateAccount = async (
 			WHERE
 				username = '${oldUsername}'
 			`,
-		);
-		console.log(changes);
-		console.log(`
+	);
+	console.log(changes);
+	console.log(`
 			username: ${newUsername},
 			passphrase: ${passphrase}`);
-		// Handle it here
-		ctx.response.body = {
-			message: `${usernameChangeMessage}. ${passphraseChangeMessage}`,
-			status: 200,
-		};
-
-		return;
-	}
-
-	ctx.response.status = 409;
+	// Handle it here
 	ctx.response.body = {
-		message: `Username \`${newUsername}\` already taken`,
-		status: 409,
+		message: `${usernameChangeMessage}. ${passphraseChangeMessage}`,
+		status: 200,
 	};
 
 	return;

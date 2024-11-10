@@ -3,7 +3,10 @@
   "specifiers": {
     "jsr:@db/sqlite@*": "0.12.0",
     "jsr:@db/sqlite@0.12": "0.12.0",
+    "jsr:@denosaurs/argontwo@0.2": "0.2.0",
+    "jsr:@denosaurs/lz4@0.1.4": "0.1.4",
     "jsr:@denosaurs/plug@1": "1.0.6",
+    "jsr:@denosaurs/plug@^1.0.6": "1.0.6",
     "jsr:@oak/commons@1": "1.0.0",
     "jsr:@oak/oak@*": "17.0.0",
     "jsr:@oak/oak@17": "17.0.0",
@@ -39,9 +42,19 @@
     "@db/sqlite@0.12.0": {
       "integrity": "dd1ef7f621ad50fc1e073a1c3609c4470bd51edc0994139c5bf9851de7a6d85f",
       "dependencies": [
-        "jsr:@denosaurs/plug",
+        "jsr:@denosaurs/plug@1",
         "jsr:@std/path@0.217"
       ]
+    },
+    "@denosaurs/argontwo@0.2.0": {
+      "integrity": "1ce2f4c90ba3643e6fffd0d9be059f7cacfb62cf1b314049b6c7c71d87cb92a1",
+      "dependencies": [
+        "jsr:@denosaurs/lz4",
+        "jsr:@std/encoding@0.221"
+      ]
+    },
+    "@denosaurs/lz4@0.1.4": {
+      "integrity": "ad5d556c02eb01fe1e0f2e953d7be066a14870afe149b1aed1ced019460f6aa1"
     },
     "@denosaurs/plug@1.0.6": {
       "integrity": "6cf5b9daba7799837b9ffbe89f3450510f588fafef8115ddab1ff0be9cb7c1a7",
@@ -168,6 +181,7 @@
   "workspace": {
     "dependencies": [
       "jsr:@db/sqlite@0.12",
+      "jsr:@denosaurs/argontwo@0.2",
       "jsr:@oak/oak@17",
       "jsr:@std/crypto@^1.0.3",
       "jsr:@std/dotenv@~0.225.2",
