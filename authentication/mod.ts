@@ -27,12 +27,12 @@ const checkAuth = async (
 
 	const jwtFromCookie = await ctx.cookies.get("user");
 	const authHeader = ctx.request.headers.get("Authorization");
-	console.log(
+	console.info(
 		`Has Cookie: ${jwtFromCookie !== undefined}\nHas Auth Header: ${
 			authHeader !== null
 		}`,
 	);
-	console.log("Cookie", jwtFromCookie);
+	console.info("Cookie", jwtFromCookie);
 	const [, jwt] = authHeader ? authHeader.split(" ") : [null, null];
 
 	if (!jwt || !jwtFromCookie) {

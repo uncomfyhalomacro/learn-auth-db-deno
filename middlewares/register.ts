@@ -18,7 +18,7 @@ const register = async (
 ) => {
 	const requestBody: RegisterBody | null = await ctx.request
 		.body.json().catch((err) => {
-			console.log(err);
+			console.error(err);
 			return null;
 		});
 
@@ -31,7 +31,7 @@ const register = async (
 
 		return;
 	}
-	
+
 	const { username, passphrase } = requestBody;
 
 	if (!username?.trim() || !passphrase?.trim()) {

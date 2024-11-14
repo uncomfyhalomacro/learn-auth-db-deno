@@ -1,5 +1,5 @@
 import type { RouterContext } from "@oak/oak/router";
-import {  encodeBase64 } from "@std/encoding";
+import { encodeBase64 } from "@std/encoding";
 import type User from "types/user";
 import db from "database";
 import { argon2Hasher, argon2Verify } from "authentication/crypto";
@@ -79,10 +79,14 @@ const updateAccount = async (
 		};
 		return;
 	}
-	
+
 	let usernameChangeMessage = "";
 	let passphraseChangeMessage = "";
-	const newPassphraseWithOldSalt = argon2Verify(passphrase ?? "", user.salt, user.passphrase);
+	const newPassphraseWithOldSalt = argon2Verify(
+		passphrase ?? "",
+		user.salt,
+		user.passphrase,
+	);
 	if (newUsername === oldUsername) {
 		usernameChangeMessage += "Username unchanged";
 	} else {
@@ -98,7 +102,7 @@ const updateAccount = async (
 
 	if (
 		(newUsername === oldUsername) &&
-		(newPassphraseWithOldSalt)
+		newPassphraseWithOldSalt
 	) {
 		ctx.response.status = 304;
 		ctx.response.body = {
@@ -111,7 +115,9 @@ const updateAccount = async (
 
 	const randSalt = crypto.getRandomValues(new Uint8Array(32));
 	const newSalt = encodeBase64(randSalt);
-	const hashedPassphrase = encodeBase64(argon2Hasher(passphrase ?? "", newSalt));
+	const hashedPassphrase = encodeBase64(
+		argon2Hasher(passphrase ?? "", newSalt),
+	);
 	const changes = db.exec(
 		`
 			UPDATE users 

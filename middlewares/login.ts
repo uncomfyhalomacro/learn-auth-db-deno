@@ -49,7 +49,11 @@ const login = async (
 		return;
 	}
 
-	const verifiedPassphraseString = argon2Verify(passphrase, user.salt, user.passphrase);
+	const verifiedPassphraseString = argon2Verify(
+		passphrase,
+		user.salt,
+		user.passphrase,
+	);
 
 	if (verifiedPassphraseString) {
 		const jwt = await generateJwt(user, ctx.request.url.origin);
